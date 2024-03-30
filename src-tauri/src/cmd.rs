@@ -13,7 +13,7 @@ use crate::dialect::duckdb::DuckDbDialect;
 use crate::dialect::file::FileDialect;
 use crate::dialect::folder::FolderDialect;
 use crate::dialect::mysql::MySqlDialect;
-use crate::dialect::postgres::PostgresDialect;
+// use crate::dialect::postgres::PostgresDialect;
 use crate::dialect::sqlite::SqliteDialect;
 use crate::dialect::{Connection, TreeNode};
 
@@ -84,13 +84,13 @@ pub async fn get_dialect(
       password: password.unwrap_or_default(),
       database,
     })),
-    "postgres" => Some(Box::new(PostgresDialect {
-      host: host.unwrap(),
-      port: port.unwrap(),
-      username: username.unwrap_or_default(),
-      password: password.unwrap_or_default(),
-      database,
-    })),
+    // "postgres" => Some(Box::new(PostgresDialect {
+    //   host: host.unwrap(),
+    //   port: port.unwrap(),
+    //   username: username.unwrap_or_default(),
+    //   password: password.unwrap_or_default(),
+    //   database,
+    // })),
     // _ => Err("not support dialect".to_string()),
     _ => None,
   }

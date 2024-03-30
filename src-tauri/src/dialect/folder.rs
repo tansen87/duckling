@@ -1,7 +1,7 @@
 use std::fs;
 use std::path::Path;
 
-use arrow::array::{Array, AsArray, StringArray};
+use arrow::array::{Array, StringArray};
 use async_trait::async_trait;
 use glob::glob;
 
@@ -49,19 +49,19 @@ impl Connection for FolderDialect {
       let mut tmp = vec![];
       let pattern = format!("{table}/**/*.parquet");
       if exist_glob(&pattern) {
-        tmp.push(format!("SELECT '*.parquet' as file_type, * FROM (DESCRIBE select * FROM read_parquet('{pattern}', union_by_name = true))"))
+        tmp.push(format!("SELECT '*.parquet' as file_type, * FROM (DESCRIBE select * FROM read_parquet('{pattern}', union_by_name = true, all_varchar=true))"))
       }
 
       let pattern = format!("{table}/**/*.csv");
       if exist_glob(&pattern) {
-        tmp.push(format!("SELECT '*.csv' as file_type, * FROM (DESCRIBE select * FROM read_csv('{pattern}', union_by_name = true))"))
+        tmp.push(format!("SELECT '*.csv' as file_type, * FROM (DESCRIBE select * FROM read_csv('{pattern}', union_by_name = true, all_varchar=true))"))
       }
 
       tmp.join("\n union all \n")
     } else if ext == "parquet" {
-      format!("DESCRIBE select * from read_parquet('{table}')")
+      format!("DESCRIBE select * from read_parquet('{table}', all_varchar=true)")
     } else if ext == "csv" {
-      format!("DESCRIBE select * from read_csv('{table}', union_by_name=true)")
+      format!("DESCRIBE select * from read_csv('{table}', union_by_name=true, all_varchar=true)")
     } else {
       String::new()
     };
@@ -98,22 +98,22 @@ impl Connection for FolderDialect {
       let pattern = format!("{table}/**/*.parquet");
       if exist_glob(&pattern) {
         tmp.push(format!(
-          "select * FROM read_parquet('{pattern}', union_by_name=true, filename=true)"
+          "select * FROM read_parquet('{pattern}', union_by_name=true, filename=true, all_varchar=true)"
         ));
       }
 
       let pattern = format!("{table}/**/*.csv");
       if exist_glob(&pattern) {
         tmp.push(format!(
-          "select * FROM read_csv('{pattern}', union_by_name=true, filename=true)"
+          "select * FROM read_csv('{pattern}', union_by_name=true, filename=true, all_varchar=true)"
         ));
       }
 
       tmp.join("\n union all \n")
     } else if ext == "parquet" {
-      format!("select * from read_parquet('{table}', union_by_name=true, filename=true)")
+      format!("select * from read_parquet('{table}', union_by_name=true, filename=true, all_varchar=true)")
     } else if ext == "csv" {
-      format!("select * from read_csv('{table}', union_by_name=true, filename=true)")
+      format!("select * from read_csv('{table}', union_by_name=true, filename=true, all_varchar=true)")
     } else {
       String::new()
     };
