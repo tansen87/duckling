@@ -8,8 +8,8 @@ use rusqlite::types::Value;
 use rusqlite::Column;
 
 use crate::api::RawArrowData;
-use crate::dialect::{Connection, Title, TreeNode};
-use crate::utils::{build_tree, get_file_name, Table};
+use crate::dialect::Connection;
+use crate::utils::{build_tree, get_file_name, Table, Title, TreeNode};
 
 #[derive(Debug, Default)]
 pub struct SqliteDialect {
@@ -124,15 +124,17 @@ impl SqliteDialect {
   fn arrow_type(col: &Column) -> DataType {
     if let Some(decl_type) = col.decl_type() {
       match decl_type {
-        "INTEGER" => DataType::Int64,
-        "REAL" => DataType::Float64,
+        // INT, INTEGER
+        ty if ty.contains("INT") => DataType::Int64,
+        // VARCHAR, NVARCHAR, TEXT, CLOB
+        ty if ty.contains("CHAR") || ty.contains("CLOB") || ty.contains("TEXT") => DataType::Utf8,
+        ty if ty.contains("BLOB") => DataType::LargeBinary,
+        ty if ty.contains("REAL") || ty.contains("DOUB") || ty.contains("FLOA") => {
+          DataType::Float64
+        }
+        ty if ty.contains("NUMERIC") => DataType::Utf8,
+        "DATE" | "DATETIME" | "TIME" => DataType::Utf8,
         "BOOLEAN" => DataType::Boolean,
-        "DATE" => DataType::Utf8,
-        "DATETIME" => DataType::Utf8,
-        "TIME" => DataType::Utf8,
-        decl_type if decl_type.starts_with("NUMERIC") => DataType::Utf8,
-        decl_type if decl_type.starts_with("NVARCHAR") => DataType::Utf8,
-        "BLOB" => DataType::Binary,
         "NULL" => DataType::Null,
         _ => DataType::Utf8,
       }
@@ -190,10 +192,11 @@ pub fn convert_arrow(value: &Value, typ: &str) -> ArrayRef {
       }
     }
     Value::Text(s) => Arc::new(StringArray::from(vec![s.clone()])) as ArrayRef,
-    Value::Blob(b) => Arc::new(BinaryArray::from_vec(vec![b])) as ArrayRef,
+    Value::Blob(b) => Arc::new(LargeBinaryArray::from_vec(vec![b])) as ArrayRef,
     Value::Null => match typ {
       "TEXT" | "NUMERIC" => Arc::new(StringArray::from(vec![None::<String>])) as ArrayRef,
       "INTEGER" => Arc::new(Int64Array::from(vec![None::<i64>])) as ArrayRef,
+      "BLOB" => Arc::new(LargeBinaryArray::from_opt_vec(vec![None::<&[u8]>])) as ArrayRef,
       _ => Arc::new(StringArray::from(vec![None::<String>])) as ArrayRef,
     },
   }

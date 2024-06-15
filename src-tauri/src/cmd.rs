@@ -8,14 +8,12 @@ use tauri::State;
 
 use crate::api;
 use crate::api::ArrowResponse;
-use crate::dialect::clickhouse::ClickhouseDialect;
 use crate::dialect::duckdb::DuckDbDialect;
 use crate::dialect::file::FileDialect;
 use crate::dialect::folder::FolderDialect;
-use crate::dialect::mysql::MySqlDialect;
-use crate::dialect::postgres::PostgresDialect;
 use crate::dialect::sqlite::SqliteDialect;
-use crate::dialect::{Connection, TreeNode};
+use crate::dialect::Connection;
+use crate::utils::TreeNode;
 
 pub struct OpenedUrls(pub Mutex<Option<Vec<url::Url>>>);
 
@@ -23,11 +21,6 @@ pub struct OpenedUrls(pub Mutex<Option<Vec<url::Url>>>);
 pub struct DialectPayload {
   pub dialect: String,
   pub path: Option<String>,
-  pub username: Option<String>,
-  pub password: Option<String>,
-  pub host: Option<String>,
-  pub port: Option<String>,
-  pub database: Option<String>,
   pub cwd: Option<String>,
 }
 
@@ -35,9 +28,6 @@ pub struct DialectPayload {
 pub fn get_ast_dialect(dialect: &str) -> Box<dyn sqlparser::dialect::Dialect> {
   match dialect {
     "folder" | "file" | "duckdb" => Box::new(sqlparser::dialect::DuckDbDialect {}),
-    "clickhouse" => Box::new(sqlparser::dialect::ClickHouseDialect {}),
-    "mysql" => Box::new(sqlparser::dialect::MySqlDialect {}),
-    "postgres" => Box::new(sqlparser::dialect::PostgreSqlDialect {}),
     _ => Box::new(sqlparser::dialect::GenericDialect {}),
   }
 }
@@ -47,11 +37,6 @@ pub async fn get_dialect(
   DialectPayload {
     dialect,
     path,
-    username,
-    password,
-    database,
-    host,
-    port,
     cwd,
   }: DialectPayload,
 ) -> Option<Box<dyn Connection>> {
@@ -69,27 +54,6 @@ pub async fn get_dialect(
     })),
     "sqlite" => Some(Box::new(SqliteDialect {
       path: path.unwrap(),
-    })),
-    "clickhouse" => Some(Box::new(ClickhouseDialect {
-      host: host.unwrap(),
-      port: port.unwrap(),
-      username: username.unwrap_or_default(),
-      password: password.unwrap_or_default(),
-      database,
-    })),
-    "mysql" => Some(Box::new(MySqlDialect {
-      host: host.unwrap(),
-      port: port.unwrap(),
-      username: username.unwrap_or_default(),
-      password: password.unwrap_or_default(),
-      database,
-    })),
-    "postgres" => Some(Box::new(PostgresDialect {
-      host: host.unwrap(),
-      port: port.unwrap(),
-      username: username.unwrap_or_default(),
-      password: password.unwrap_or_default(),
-      database,
     })),
     // _ => Err("not support dialect".to_string()),
     _ => None,

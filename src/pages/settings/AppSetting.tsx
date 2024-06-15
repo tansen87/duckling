@@ -1,16 +1,10 @@
 import { DialogClose } from '@radix-ui/react-dialog';
-import { ReloadIcon } from '@radix-ui/react-icons';
 import { getTauriVersion, getVersion } from '@tauri-apps/api/app';
-import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
-import { relaunch } from '@tauri-apps/plugin-process';
 import * as shell from '@tauri-apps/plugin-shell';
-import { Update, check } from '@tauri-apps/plugin-updater';
 import { atom, useAtom } from 'jotai';
 import { SettingsIcon } from 'lucide-react';
-import { nanoid } from 'nanoid';
 import { PropsWithChildren, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
 
 import Dialog from '@/components/custom/Dialog';
 import { SidebarNav } from '@/components/custom/siderbar-nav';
@@ -37,9 +31,7 @@ import {
   CsvParam,
   SettingState,
   settingAtom,
-  useSettingStore,
 } from '@/stores/setting';
-import { isEmpty } from 'radash';
 
 const items = [
   {
@@ -48,12 +40,12 @@ const items = [
   },
   {
     key: 'csv',
-    title: 'Import/Export',
+    title: 'Read/Export',
   },
-  {
-    key: 'update',
-    title: 'Software Update',
-  },
+  // {
+  //   key: 'update',
+  //   title: 'Software Update',
+  // },
 ];
 
 export const navKeyAtom = atom('profile');
@@ -88,9 +80,9 @@ export default function AppSettingDialog() {
           <Display hidden={navKey == 'csv'}>
             <CSVForm />
           </Display>
-          <Display hidden={navKey == 'update'}>
+          {/* <Display hidden={navKey == 'update'}>
             <UpdateForm />
-          </Display>
+          </Display> */}
         </div>
       </div>
     </Dialog>
@@ -183,14 +175,11 @@ function Profile() {
 }
 
 const UpdateForm = () => {
-  const proxy = useSettingStore((state) => state.proxy);
-
   const [settings, setSettings] = useAtom(settingAtom);
   const form = useForm({
     defaultValues: settings,
   });
 
-  const [loading, setLoading] = useState<boolean>(false);
   const [version, setVersion] = useState<string>();
   const [tauriVersion, setTauriVersion] = useState<string>();
   const onSubmit = (data: SettingState) => {
@@ -202,42 +191,6 @@ const UpdateForm = () => {
       setTauriVersion(await getTauriVersion());
     })();
   });
-
-  const [update, setUpdate] = useState<Update | null>(null);
-  const [size, setSize] = useState<number | null>();
-
-  const handleCheck = async () => {
-    setLoading(true);
-    const update = await check({ proxy });
-    console.log(update);
-    setUpdate(update);
-    if (update?.version != update?.currentVersion) {
-      toast('Discover new version', {
-        action: {
-          label: 'Update',
-          onClick: handleUpdater,
-        },
-      });
-    } else {
-      toast.success("It's the latest version");
-    }
-    setLoading(false);
-  };
-
-  const handleUpdater = async () => {
-    await update?.downloadAndInstall((e) => {
-      if (e.event == 'Started') {
-        setSize(e.data.contentLength);
-      } else if (e.event == 'Progress') {
-        if (size) {
-          e.data.chunkLength;
-        }
-      }
-    });
-    await relaunch();
-  };
-
-  const debug = form.watch('debug');
 
   return (
     <>
@@ -280,55 +233,6 @@ const UpdateForm = () => {
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
-                </FormItem>
-              )}
-            />
-            <div className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-              <div className="space-y-0.5">
-                <FormLabel>Current version: {version}</FormLabel>
-                <FormDescription>Tauri: {tauriVersion}</FormDescription>
-              </div>
-              <div>
-                <Button
-                  disabled={loading}
-                  onClick={async (e) => {
-                    e.preventDefault();
-                    await handleCheck();
-                  }}
-                >
-                  {loading ? (
-                    <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-                  ) : null}
-                  Check for updates
-                </Button>
-              </div>
-            </div>
-            <FormField
-              control={form.control}
-              name="debug"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Debug</FormLabel>
-                  <FormDescription>
-                    Open developer debugging page
-                  </FormDescription>
-                  <div className="flex w-full items-center space-x-2">
-                    <FormControl>
-                      <Input placeholder="http://localhost:5173" {...field} />
-                    </FormControl>
-                    <Button
-                      variant="secondary"
-                      disabled={isEmpty(debug)}
-                      onClick={async () => {
-                        new WebviewWindow(`debug-${nanoid()}`, {
-                          url: debug,
-                          title: `Debug-${debug}`,
-                        });
-                      }}
-                    >
-                      Open
-                    </Button>
-                  </div>
                 </FormItem>
               )}
             />

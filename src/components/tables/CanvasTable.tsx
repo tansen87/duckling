@@ -18,14 +18,12 @@ import { TableProps } from '@/components/tables/AgTable';
 import { useTheme } from '@/hooks/theme-provider';
 import { tableFontFamilyAtom } from '@/stores/setting';
 import { isDarkTheme, isNumberType, uniqueArray } from '@/utils';
+import { assign } from 'radash';
 
 type ITableThemeDefine = ComponentProps<typeof ListTable>['theme'];
 
 const LIGHT_THEME: ITableThemeDefine = {
   defaultStyle: {
-    fontSize: 12,
-    fontFamily: 'Consolas',
-    borderLineWidth: 1,
     borderColor: '#f2f2f2',
     hover: {
       cellBgColor: '#9cbef4',
@@ -33,16 +31,9 @@ const LIGHT_THEME: ITableThemeDefine = {
       inlineColumnBgColor: '#9cbef4',
     },
   },
-  headerStyle: {
-    fontSize: 12,
-    padding: [8, 12, 6, 12],
-    borderLineWidth: 1,
-  },
+  headerStyle: {},
   bodyStyle: {
-    fontSize: 12,
-    fontFamily: 'Consolas',
-    lineHeight: 12,
-    padding: [8, 12, 6, 12],
+    bgColor: getLightBackgroundColor,
     hover: {
       cellBgColor: '#CCE0FF',
       inlineRowBgColor: '#F3F8FF',
@@ -51,69 +42,35 @@ const LIGHT_THEME: ITableThemeDefine = {
   },
   frameStyle: {
     borderColor: '#d1d5da',
-    borderLineWidth: 0,
-    borderLineDash: [],
-    cornerRadius: 0,
-    shadowBlur: 0,
-    shadowOffsetX: 0,
-    shadowOffsetY: 0,
     shadowColor: 'rgba(00, 24, 47, 0.06)',
-  },
-  selectionStyle: {
-    cellBorderLineWidth: 1,
   },
 };
 
 const DARK_THEME: ITableThemeDefine = {
   underlayBackgroundColor: 'transparent',
   defaultStyle: {
-    fontSize: 12,
-    fontFamily: 'Consolas',
-    borderLineWidth: 1,
     color: '#D3D5DA',
     bgColor: '#373b45',
-    fontWeight: 500,
-    lineHeight: 12,
     borderColor: '#444A54',
   },
   headerStyle: {
-    fontSize: 12,
-    padding: [8, 12, 6, 12],
     bgColor: '#2e2f32',
-    borderLineWidth: 1,
   },
   bodyStyle: {
-    fontSize: 12,
-    fontFamily: 'Consolas',
-    lineHeight: 12,
-    padding: [8, 12, 6, 12],
+    bgColor: getDarkBackgroundColor,
   },
   frameStyle: {
     borderColor: '#d1d5da',
-    borderLineWidth: 0,
-    borderLineDash: [],
-    cornerRadius: 0,
-    shadowBlur: 0,
-    shadowOffsetX: 0,
-    shadowOffsetY: 0,
-  },
-
-  selectionStyle: {
-    cellBorderLineWidth: 1,
   },
 };
 
 // const lightTheme = merge([themes.ARCO, LIGHT_THEME]);
-const lightTheme = themes.ARCO.extends(LIGHT_THEME);
 // const darkTheme = merge([themes.DARK, DARK_THEME]);
-const darkTheme = themes.DARK.extends(DARK_THEME);
 
 function getDarkBackgroundColor(args: TYPES.StylePropertyFunctionArg): string {
   const { row, table } = args;
   const index = row - table.frozenRowCount;
-  if (row == table.stateManager.select.cellPos.row) {
-    return '#2F4774';
-  }
+
   if (!(index & 1)) {
     return '#2d3137';
   }
@@ -124,14 +81,77 @@ function getLightBackgroundColor(args: TYPES.StylePropertyFunctionArg): string {
   const { row, table } = args;
   const index = row - table.frozenRowCount;
 
-  if (row == table.stateManager.select.cellPos.row) {
-    return '#c8daf6';
-  }
-
   if (!(index & 1)) {
     return '#FFF';
   }
   return '#fbfbfc';
+}
+
+function useTableTheme(transpose?: boolean) {
+  const appTheme = useTheme();
+  const tableFontFamily = useAtomValue(tableFontFamilyAtom);
+
+  const common: ITableThemeDefine = {
+    defaultStyle: {
+      fontSize: 12,
+      fontFamily: 'Consolas',
+      borderLineWidth: 1,
+      fontWeight: 500,
+      lineHeight: 12,
+    },
+    bodyStyle: {
+      fontSize: 12,
+      lineHeight: 12,
+      padding: [8, 12, 6, 12],
+      fontFamily: tableFontFamily,
+      borderLineWidth: ({ row }) => {
+        if (row == 0) {
+          return [0, 1, 1, 1];
+        }
+        return [1, 1, 1, 1];
+      },
+    },
+    headerStyle: {
+      fontFamily: tableFontFamily,
+      fontSize: 12,
+      padding: [8, 12, 6, 12],
+      borderLineWidth: ({ row, table }) => {
+        // @ts-ignore
+        const transpose = table.transpose;
+        if (transpose && row == 0) {
+          return [0, 0, 0, 1];
+        }
+        return transpose ? [1, 0, 1, 1] : [0, 1, 1, 1];
+      },
+    },
+    frameStyle: {
+      borderLineWidth: 0,
+      borderLineDash: [],
+      cornerRadius: 0,
+      shadowBlur: 0,
+      shadowOffsetX: 0,
+      shadowOffsetY: 0,
+    },
+    scrollStyle: {
+      width: 8,
+      visible: 'always',
+      scrollSliderCornerRadius: 0,
+      hoverOn: false,
+      barToSide: true,
+    },
+    selectionStyle: {
+      cellBorderLineWidth: 1,
+    },
+  };
+
+  const theme = useMemo(() => {
+    const [baseTheme, colorTheme] = isDarkTheme(appTheme)
+      ? [themes.DARK, DARK_THEME]
+      : [themes.ARCO, LIGHT_THEME];
+    return baseTheme.extends(assign(common, colorTheme as Object));
+  }, [appTheme, transpose]);
+
+  return theme;
 }
 
 export const CanvasTable = React.memo(function CanvasTable({
@@ -140,6 +160,7 @@ export const CanvasTable = React.memo(function CanvasTable({
   beautify,
   precision,
   transpose,
+  cross,
   style,
   onSelectedCell,
 }: TableProps) {
@@ -167,39 +188,6 @@ export const CanvasTable = React.memo(function CanvasTable({
   const [rightPinnedCols, setRightPinnedCols] = useState<string[]>([]);
 
   const tableRef = useRef<ListTableAPI>();
-  const appTheme = useTheme();
-  const tableFontFamily = useAtomValue(tableFontFamilyAtom);
-
-  const theme = useMemo(
-    () =>
-      (isDarkTheme(appTheme) ? darkTheme : lightTheme).extends({
-        bodyStyle: {
-          fontFamily: tableFontFamily,
-          borderLineWidth: ({ row }) => {
-            if (row == 0) {
-              return [0, 1, 1, 1];
-            }
-            return [1, 1, 1, 1];
-          },
-          bgColor: isDarkTheme(appTheme)
-            ? getDarkBackgroundColor
-            : getLightBackgroundColor,
-        },
-        headerStyle: {
-          fontFamily: tableFontFamily,
-          borderLineWidth: ({ row }) => {
-            if (transpose && row == 0) {
-              return [0, 0, 0, 1];
-            }
-            return transpose ? [1, 0, 1, 1] : [0, 1, 1, 1];
-          },
-        },
-        scrollStyle: {
-          width: 8,
-        },
-      }),
-    [appTheme, transpose],
-  );
 
   const pinnedSet = new Set([...leftPinnedCols, ...rightPinnedCols]);
 
@@ -252,13 +240,6 @@ export const CanvasTable = React.memo(function CanvasTable({
       } as ColumnDefine;
     },
   );
-
-  // const [popup, _setPopup] = useState<Partial<PosType>>({});
-  // const popupRef = useRef(popup);
-  // const setPopup = (data: Partial<PosType>) => {
-  //   popupRef.current = data;
-  //   _setPopup(data);
-  // };
 
   useEffect(() => {
     const handleBodyClick = (_e: Event) => {
@@ -334,7 +315,9 @@ export const CanvasTable = React.memo(function CanvasTable({
         await writeText((e?.field as string) ?? '');
       }
     }
-  };
+    };
+    const theme = useTableTheme(transpose);
+    const appTheme = useTheme();
 
   const option: ListTableConstructorOptions = React.useMemo(
     () => ({
@@ -348,21 +331,29 @@ export const CanvasTable = React.memo(function CanvasTable({
       rightFrozenColCount: rightPinnedCols.length,
       theme,
       transpose,
+      rowSeriesNumber: {
+        title: '',
+        width: 'auto',
+        headerStyle: {},
+        style: { color: '#96938f', fontSize: 10, textAlign: 'center' },
+        dragOrder: false,
+        disableColumnResize: true,
+      },
       columns: [
-        {
-          field: '__index__',
-          title: '',
-          dragHeader: false,
-          disableSelect: true,
-          // disableHover: true,
-          disableHeaderHover: true,
-          disableHeaderSelect: true,
-          disableColumnResize: true,
-          style: { color: '#96938f', fontSize: 10, textAlign: 'center' },
-          fieldFormat: (_r, col, row) => {
-            return transpose ? col : row;
-          },
-        },
+        // {
+        //   field: '__index__',
+        //   title: '',
+        //   dragHeader: false,
+        //   disableSelect: true,
+        //   // disableHover: true,
+        //   disableHeaderHover: true,
+        //   disableHeaderSelect: true,
+        //   disableColumnResize: true,
+        //   style: { color: '#96938f', fontSize: 10, textAlign: 'center' },
+        //   fieldFormat: (_r, col, row) => {
+        //     return transpose ? col : row;
+        //   },
+        // },
         ...__columns,
       ],
       menu: {
@@ -391,9 +382,11 @@ export const CanvasTable = React.memo(function CanvasTable({
         },
       },
       hover: {
-        // disableHover: true,
         highlightMode: 'cell',
-        // disableHeaderHover: true,
+      },
+      select: {
+        headerSelectMode: 'cell',
+        highlightMode: cross ? 'cross' : 'row',
       },
       keyboardOptions: {
         moveEditCellOnArrowKeys: true,
@@ -401,9 +394,18 @@ export const CanvasTable = React.memo(function CanvasTable({
         pasteValueToCell: true,
       },
     }),
-    [data, transpose, appTheme, leftPinnedCols, rightPinnedCols, beautify],
+    [
+      data,
+      transpose,
+      appTheme,
+      leftPinnedCols,
+      rightPinnedCols,
+      beautify,
+      cross,
+    ],
   );
 
+  console.log("cross:", cross);
   return (
     <div
       className="h-full select-text"
@@ -421,7 +423,6 @@ export const CanvasTable = React.memo(function CanvasTable({
         onMouseDownCell={(arg) => {
           const table = tableRef.current;
           if (table) {
-            table.updateTheme(table.theme);
             const value = table.getCellRawValue(arg.col, arg.row);
             onSelectedCell?.(value);
           }
@@ -429,9 +430,6 @@ export const CanvasTable = React.memo(function CanvasTable({
         onDropdownMenuClick={handleDropdownMenuClick}
         onMouseEnterCell={handleMouseEnterCell}
         option={option}
-        onReady={(...arg) => {
-          console.log('onReady:', arg);
-        }}
       />
     </div>
   );
@@ -439,22 +437,7 @@ export const CanvasTable = React.memo(function CanvasTable({
 
 export function SimpleTable({ data }: { data: unknown[] }) {
   const tableRef = useRef<ListTableAPI>();
-  const appTheme = useTheme();
-  const tableFontFamily = useAtomValue(tableFontFamilyAtom);
-
-  const theme = useMemo(
-    () =>
-      (isDarkTheme(appTheme) ? darkTheme : lightTheme).extends({
-        bodyStyle: {
-          fontFamily: tableFontFamily,
-        },
-        headerStyle: {
-          fontFamily: tableFontFamily,
-          borderLineWidth: [0, 1, 1, 1],
-        },
-      }),
-    [appTheme],
-  );
+  const theme = useTableTheme();
 
   const option: ListTableConstructorOptions = React.useMemo(
     () => ({

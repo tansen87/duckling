@@ -77,94 +77,11 @@ export function ConfigDialog({
                       <SelectItem value="duckdb">DuckDB</SelectItem>
                       <SelectItem value="folder">Data Folder</SelectItem>
                       <SelectItem value="sqlite">SQLite</SelectItem>
-                      <SelectItem value="mysql">MySQL</SelectItem>
-                      <SelectItem value="postgres">Postgres</SelectItem>
-                      <SelectItem value="clickhouse">Clickhouse</SelectItem>
                     </SelectContent>
                   </Select>
                 </FormItem>
               )}
             />
-            {watchDialect == 'clickhouse' ||
-            watchDialect == 'mysql' ||
-            watchDialect == 'postgres' ? (
-              <>
-                <div className="flex">
-                  <FormField
-                    control={form.control}
-                    name="host"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center w-[62.5%]">
-                        <FormLabel className="w-1/5 mr-2 mt-2">Host</FormLabel>
-                        <FormControl className="w-4/5">
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="port"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center w-[37.5%]">
-                        <FormLabel className="w-1/3 mr-2 text-right mt-2">
-                          Port
-                        </FormLabel>
-                        <FormControl className="w-2/3">
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <FormField
-                  control={form.control}
-                  name="database"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center w-[62.5%]">
-                      <FormLabel className="w-1/5 mr-2 mt-2">
-                        Database
-                      </FormLabel>
-                      <FormControl className="w-4/5">
-                        <Input {...field} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="username"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center w-[62.5%]">
-                      <FormLabel className="w-1/5 mr-2 mt-2">
-                        Username
-                      </FormLabel>
-                      <FormControl className="w-4/5">
-                        <Input {...field} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center w-[62.5%]">
-                      <FormLabel className="w-1/5 mr-2 mt-2">
-                        Password
-                      </FormLabel>
-                      <FormControl className="w-4/5">
-                        <Input type="password" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </>
-            ) : null}
             {watchDialect == 'duckdb' ||
             watchDialect == 'sqlite' ||
             watchDialect == 'folder' ? (

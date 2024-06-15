@@ -5,7 +5,7 @@ use arrow::{ipc::writer::StreamWriter, record_batch::RecordBatch};
 use duckdb::Connection;
 use serde::{Deserialize, Serialize};
 
-use crate::dialect::Title;
+use crate::utils::Title;
 
 pub struct RawArrowData {
   /// The total number of rows that were selected.
@@ -82,6 +82,21 @@ pub fn fetch_all(path: &str, sql: &str, cwd: Option<String>) -> anyhow::Result<R
   let schema = frames.get_schema();
   let records: Vec<_> = frames.collect();
   Ok(arrow::compute::concat_batches(&schema, &records)?)
+}
+
+pub fn duck_fetch_all(path: &str, sql: &str, file: &str, cwd: Option<String>) -> anyhow::Result<()> {
+  if let Some(cwd) = &cwd {
+    let _ = set_current_dir(cwd);
+  }
+  log::info!("current_dir: {}", current_dir()?.display());
+  // replace sql
+  let re = regex::Regex::new(r"(?m)--.*")?;
+  let cleaned_sql = re.replace_all(sql, "");
+  let con = Connection::open(path);
+  let db = con.map_err(|err| anyhow!("Failed to open database connection: {}", err))?;
+  let edata = format!("COPY ({cleaned_sql}) TO '{file}' (DELIMITER '|');");
+  db.execute_batch(&edata)?;
+  anyhow::Ok(())
 }
 
 pub fn query(

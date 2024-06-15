@@ -3,6 +3,7 @@ import { IconDecimal } from '@tabler/icons-react';
 import { useAtomValue } from 'jotai';
 import {
   CodeIcon,
+  CrossIcon,
   DownloadIcon,
   EyeIcon,
   Loader2Icon,
@@ -54,6 +55,7 @@ export function TableView({ context }: { context: TabContextType }) {
     beautify,
     orderBy,
     transpose,
+    cross,
     showValue,
   } = usePageStore();
   const currentTab = useTabsStore((s) => s.currentId);
@@ -84,7 +86,7 @@ export function TableView({ context }: { context: TabContextType }) {
         <ResizablePanel defaultSize={80} className="flex flex-col size-full">
           <div className="h-full flex flex-col">
             <InputToolbar />
-            <div className="h-full flex-1">
+            <div className="h-full flex-1 overflow-hidden">
               <Suspense fallback={<Loading />}>
                 {loading ? <Loading /> : null}
                 <TableComponent
@@ -95,6 +97,7 @@ export function TableView({ context }: { context: TabContextType }) {
                   orderBy={orderBy}
                   precision={precision}
                   transpose={transpose}
+                  cross={cross}
                   onSelectedCell={(arg) => {
                     setSelectCell(arg as string);
                   }}
@@ -140,13 +143,15 @@ function DataViewToolbar() {
     total,
     sql,
     elapsed,
-
+    cross,
+    transpose,
     setShowValue,
 
     refresh,
     setBeautify,
     setPagination,
     setTranspose,
+    setCross,
   } = usePageStore();
 
   const handeChange = (page: number, perPage: number) => {
@@ -184,9 +189,16 @@ function DataViewToolbar() {
       </Stack>
       <Stack>
         <TooltipButton
+          icon={<CrossIcon />}
+          onClick={setCross}
+          tooltip="Cross"
+          active={cross}
+        />
+        <TooltipButton
           icon={<TransposeIcon />}
           onClick={setTranspose}
           tooltip="Transpose"
+          active={transpose}
         />
         {/* TODO */}
 
@@ -233,7 +245,7 @@ export function InputToolbar() {
         <ResizablePanel defaultSize={50} className="flex flex-row items-center">
           <div className="mx-1.5 text-muted-foreground text-sm">WHERE</div>
           <input
-            className="flex-1 h-full border-none p-0 outline-none bg-transparent"
+            className="flex-1 h-full border-none p-0 outline-none bg-transparent text-sm"
             value={stmt.where}
             onKeyDown={async (e) => {
               if (e.key === 'Enter') {
@@ -250,7 +262,7 @@ export function InputToolbar() {
         <ResizablePanel defaultSize={50} className="flex flex-row items-center">
           <div className="mx-1.5 text-muted-foreground text-sm">ORDER BY</div>
           <input
-            className="flex-1 h-full border-none p-0 outline-none bg-transparent"
+            className="flex-1 h-full border-none p-0 outline-none bg-transparent text-sm"
             value={stmt.orderBy}
             onKeyDown={async (e) => {
               if (e.key === 'Enter') {

@@ -75,7 +75,7 @@ export function ASide() {
           label="Help"
           icon={HelpCircleIcon}
           onClick={() => {
-            open('https://github.com/l1xnan/duckling');
+            open('https://github.com/tansen87/duckling');
           }}
         />
         <ToggleColorMode />

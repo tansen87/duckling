@@ -21,6 +21,7 @@ import {
   FormLabel,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { docsAtom, favoriteAtom } from '@/stores/app';
@@ -42,7 +43,13 @@ import {
   XIcon,
 } from 'lucide-react';
 import { shake } from 'radash';
-import { PropsWithChildren, ReactNode, useContext } from 'react';
+import {
+  PropsWithChildren,
+  ReactNode,
+  useContext,
+  useEffect,
+  useRef,
+} from 'react';
 import { useForm } from 'react-hook-form';
 import {
   ScrollMenu,
@@ -50,12 +57,12 @@ import {
   type publicApiType,
 } from 'react-horizontal-scrolling-menu';
 import 'react-horizontal-scrolling-menu/dist/styles.css';
-import { ScrollArea, ScrollBar } from './ui/scroll-area';
 
 export interface PageTabsProps {
   items: { tab: TabContextType; children: ReactNode }[];
   activeKey: string;
   fallback?: ReactNode;
+  indicator?: 'top' | 'bottom';
   onRemove?: (key: string) => void;
   onChange: (key: string) => void;
   renderItem?: ({ tab }: { tab: TabContextType }) => JSX.Element;
@@ -94,9 +101,7 @@ export function TabItemContextMenu({
           console.log(open);
         }}
       >
-        <ContextMenuTrigger className="w-full">
-          {children}
-        </ContextMenuTrigger>
+        <ContextMenuTrigger className="w-full">{children}</ContextMenuTrigger>
         <ContextMenuContent className="w-64">
           <ContextMenuItem
             onClick={async () => {
@@ -152,17 +157,45 @@ export function TabItemContextMenu({
   );
 }
 
+function usePrevious<T>(value: T) {
+  const ref = useRef<T>();
+
+  useEffect(() => {
+    ref.current = value;
+  }, [value]);
+
+  return ref.current;
+}
+type scrollVisibilityApiType = React.ContextType<typeof VisibilityContext>;
+
 export function PageTabs({
   items,
   activeKey,
+  indicator,
   onChange,
   onRemove,
   renderItem,
 }: PageTabsProps) {
+  // Add item and scroll to it
+  const itemsPrev = usePrevious(items);
+  const apiRef = useRef({} as scrollVisibilityApiType);
+  useEffect(() => {
+    const item = apiRef.current?.getItemById?.(activeKey);
+    if (!item?.visible) {
+      apiRef.current?.scrollToItem?.(
+        apiRef.current?.getItemElementById(activeKey) as Element,
+      );
+    }
+    if (items?.length > (itemsPrev?.length ?? 0)) {
+      }
+    }, [items, itemsPrev, activeKey]);
+
   const tabsList = items.map(({ tab }) => {
     const Comp = renderItem;
     return (
       <TabsTrigger
+        id={tab.id}
+        itemID={tab.id}
         key={tab.id}
         value={tab.id}
         className={cn(
@@ -176,8 +209,13 @@ export function PageTabs({
       >
         <div
           className={cn(
-            'h-0.5 w-full bg-[#1976d2] absolute bottom-0 left-0 invisible z-6',
+            'h-0.5 w-full bg-[#1976d2] absolute left-0 invisible z-6',
             'group-data-[state=active]:visible',
+            {
+              'bottom-0': indicator != 'top',
+              'top-0': indicator == 'top',
+            },
+            `${indicator ?? 'bottom'}-0`,
           )}
         />
         {Comp ? (
@@ -198,6 +236,7 @@ export function PageTabs({
         <div className="w-full relative h-8 overflow-hidden">
           <TabsList className=" p-0 h-8 border-b-1 w-max flex flex-row justify-stretch">
             <ScrollMenu
+              apiRef={apiRef}
               onWheel={onWheel}
               // LeftArrow={LeftArrow}
               // RightArrow={RightArrow}
@@ -205,8 +244,8 @@ export function PageTabs({
               {tabsList}
             </ScrollMenu>
           </TabsList>
+          <ScrollBar orientation="horizontal" className="h-1.5" />
         </div>
-        <ScrollBar orientation="horizontal" className="h-1.5" />
       </ScrollArea>
       {items.map(({ tab: { id }, children }) => {
         return (
@@ -247,16 +286,17 @@ export function DefaultTab({ tab, onRemove }: TabItemProps) {
         variant="ghost"
         size="icon"
         className={cn(
-          'rounded-lg size-4 invisible',
+          'rounded-lg size-4 invisible ml-1',
           'group-hover:visible',
           'group-data-[state=active]:visible',
+          'hover:bg-selection',
         )}
-        onClick={(e) => {
+        onPointerDown={(e) => {
           e.stopPropagation();
           onRemove?.(tab.id);
         }}
       >
-        <XIcon className="size-4" />
+        <XIcon className="size-5 p-0.5" />
       </Button>
     </div>
   );
@@ -265,21 +305,22 @@ export function DefaultTab({ tab, onRemove }: TabItemProps) {
 export function DefaultTab1({ tab, onRemove }: TabItemProps) {
   return (
     <>
-      <span>11{tab.displayName}</span>
+      <span>{tab.displayName}</span>
       <Button
         variant="ghost"
         size="icon"
         className={cn(
-          'rounded-lg size-6 invisible',
+          'rounded-lg size-5 invisible ml-1',
           'group-hover:visible',
           'group-data-[state=active]:visible',
+          'hover:bg-selection',
         )}
-        onClick={(e) => {
+        onPointerDown={(e) => {
           e.stopPropagation();
           onRemove?.(tab.id);
         }}
       >
-        <XIcon className="size-4" />
+        <XIcon className="size-5 p-0.5" />
       </Button>
     </>
   );

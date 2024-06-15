@@ -4,8 +4,8 @@ use async_trait::async_trait;
 
 use crate::api;
 use crate::api::RawArrowData;
-use crate::dialect::{Connection, TreeNode};
-use crate::utils::{build_tree, get_file_name, write_csv, Table};
+use crate::dialect::Connection;
+use crate::utils::{build_tree, get_file_name, Table, TreeNode};
 
 #[derive(Debug, Default)]
 pub struct DuckDbDialect {
@@ -15,6 +15,10 @@ pub struct DuckDbDialect {
 
 #[async_trait]
 impl Connection for DuckDbDialect {
+  fn dialect(&self) -> &'static str {
+    "duckdb"
+  }
+
   async fn get_db(&self) -> anyhow::Result<TreeNode> {
     let conn = self.connect()?;
     let tables = get_tables(&conn, None)?;
@@ -53,10 +57,7 @@ impl Connection for DuckDbDialect {
   }
 
   async fn export(&self, sql: &str, file: &str) {
-    let data = api::fetch_all(&self.path, sql, self.cwd.clone());
-    if let Ok(batch) = data {
-      write_csv(file, &batch);
-    }
+    api::duck_fetch_all(&self.path, sql, file, self.cwd.clone()).unwrap();
   }
 
   async fn table_row_count(&self, table: &str, r#where: &str) -> anyhow::Result<usize> {
@@ -129,17 +130,6 @@ impl DuckDbDialect {
   fn connect(&self) -> anyhow::Result<duckdb::Connection> {
     Ok(duckdb::Connection::open(&self.path)?)
   }
-
-  fn new(path: &str) -> Self {
-    Self {
-      path: path.to_string(),
-      cwd: None,
-    }
-  }
-
-  fn set_cwd(&mut self, cwd: Option<String>) {
-    self.cwd = cwd;
-  }
 }
 
 pub fn get_tables(conn: &duckdb::Connection, schema: Option<&str>) -> anyhow::Result<Vec<Table>> {
@@ -171,14 +161,4 @@ pub fn get_tables(conn: &duckdb::Connection, schema: Option<&str>) -> anyhow::Re
     tables.push(row?);
   }
   Ok(tables)
-}
-
-#[tokio::test]
-async fn test_duckdb() {
-  use arrow::util::pretty::print_batches;
-
-  let path = r"D:\Code\yibai-season\data\season.duckdb";
-  let d = DuckDbDialect::new(path);
-  let res = d.query("", 0, 0).await.unwrap();
-  print_batches(&[res.batch]);
 }
