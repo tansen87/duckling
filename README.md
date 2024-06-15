@@ -11,7 +11,7 @@ Note: The current objective of this project is not to develop a fully functional
 
 ## Installation
 
-From [releases](https://github.com/l1xnan/Duckling/releases) page to download the latest installation package, for
+From [releases](https://github.com/tansen87/duckling/releases) page to download the latest installation package, for
 installation.
 
 For Windows platform, you can download and [install Webview2 offline](<(https://developer.microsoft.com/en-us/microsoft-edge/webview2/#download-section)>) if you
