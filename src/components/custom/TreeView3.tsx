@@ -1,6 +1,6 @@
 import { Tooltip } from '@/components/custom/tooltip';
 import { cn } from '@/lib/utils';
-import { DBType, selectedNodeAtom, useDBListStore } from '@/stores/dbList';
+import { DBType, NodeContextType, selectedNodeAtom } from '@/stores/dbList';
 import { TableContextType, useTabsStore } from '@/stores/tabs';
 import { NodeElementType } from '@/types';
 import { Node3Type, convertId, convertTreeToMap, filterTree } from '@/utils';
@@ -90,8 +90,8 @@ const Node = React.memo(
           >
             {item.isFolder() ? (
               <ChevronRight
-                onClick={() => {
-                  onClick();
+                onClick={(e) => {
+                  onClick?.(e);
                   item.onSelect?.();
                 }}
                 className={cn(
@@ -232,61 +232,50 @@ export const TreeView3 = forwardRef(
     },
     ref,
   ) => {
-    const treeData = useMemo(
-      () =>
-        ({
-          id: ROOT,
-          children: dbList.map((db) => ({
-            ...convertId(db.data, db.id, db.displayName),
-            icon: db.dialect,
-          })),
-        }) as NodeElementType,
-      [dbList],
-    );
 
-    const filterData = useMemo(
-      () => filterTree(treeData, search),
-      [treeData, search],
-    );
     const updateTab = useTabsStore((s) => s.update);
-    const tableMap = useDBListStore((s) => s.tableMap);
-
-    const data = useMemo(
-      () => convertTreeToMap(filterData as NodeElementType),
-      [filterData],
-    );
 
     const [, setSelectedNode] = useAtom(selectedNodeAtom);
 
-    console.log('filterData', filterData, data);
+    const treeData = useMemo(() => {
+      const _treeData = {
+        id: ROOT,
+        children: dbList.map((db) => ({
+          ...convertId(db.data, db.id, db.displayName),
+          icon: db.dialect,
+        })),
+      };
+      return convertTreeToMap(
+        filterTree(_treeData as NodeElementType, search) as NodeElementType,
+      );
+    }, [dbList, search]);
 
     const handleSelectNode = (item: ItemInstance<Node3Type>) => {
-      const data = item.getItemData()?.data;
-      setSelectedNode(data);
+      const itemData = item.getItemData()?.data;
+      setSelectedNode(itemData as unknown as NodeContextType);
     };
-    const handleDoubleClickNode = (item: ItemInstance<Node3Type>) => {
-      const data = item.getItemData()?.data;
 
-      if (!data) {
+    // BUG: 闭包存在问题，只能获取上一次的外部变量值
+    const handleDoubleClickNode = (item: ItemInstance<Node3Type>) => {
+      const node = item.getItemData()?.data;
+
+      if (!node) {
         console.warn('doubleClick data is null!');
         return;
       }
 
-      const dbId = data.dbId;
-
-      const nodes = tableMap.get(data.dbId)!;
-      const node = nodes.get(data.path as string);
+      const { dbId, path } = node;
 
       const nodeContext = {
         dbId,
-        tableId: data.path as string,
+        tableId: path as string,
       };
 
       const noDataTypes = ['path', 'database', 'root'];
       if (node && !noDataTypes.includes(node.type ?? '')) {
         const item: TableContextType = {
           ...nodeContext,
-          id: data.id,
+          id: node.id,
           dbId,
           displayName: node?.name as string,
           type: 'table',
@@ -301,7 +290,7 @@ export const TreeView3 = forwardRef(
 
     return (
       <TreeView
-        data={data}
+        data={treeData}
         ref={ref}
         onSelectNode={handleSelectNode}
         onDoubleClickNode={handleDoubleClickNode}
