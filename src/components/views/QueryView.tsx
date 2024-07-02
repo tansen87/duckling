@@ -10,7 +10,6 @@ import { Suspense, useEffect, useState } from 'react';
 import { Stack, ToolbarContainer } from '@/components/Toolbar';
 import { TransposeIcon } from '@/components/custom/Icons';
 import { Pagination } from '@/components/custom/pagination';
-import { AgTable } from '@/components/tables/AgTable';
 import { CanvasTable } from '@/components/tables/CanvasTable';
 import {
   HoverCard,
@@ -21,7 +20,7 @@ import { Separator } from '@/components/ui/separator';
 import { Loading } from '@/components/views/TableView';
 import { useTheme } from '@/hooks/theme-provider';
 import { atomStore } from '@/stores';
-import { precisionAtom, tableRenderAtom } from '@/stores/setting';
+import { precisionAtom } from '@/stores/setting';
 import { QueryContextType, executeSQL, exportData } from '@/stores/tabs';
 import { isDarkTheme } from '@/utils';
 
@@ -74,9 +73,8 @@ export function QueryView({ context }: { context: QueryContextAtom }) {
   }, []);
 
   const precision = useAtomValue(precisionAtom);
-  const tableRender = useAtomValue(tableRenderAtom);
 
-  const TableComponent = tableRender === 'canvas' ? CanvasTable : AgTable;
+  const TableComponent = CanvasTable;
   const [selectedCell, setSelectCell] = useState<string | null>(null);
 
   const theme = useTheme();
