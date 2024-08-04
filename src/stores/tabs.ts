@@ -21,7 +21,7 @@ import {
 import { atomStore } from '@/stores';
 
 import { SchemaType } from './dataset';
-import { PostgresDialectType, dbMapAtom, tablesAtom } from './dbList';
+import { dbMapAtom, tablesAtom } from './dbList';
 import { settingAtom } from './setting';
 
 export type QueryParamType = {
@@ -281,11 +281,11 @@ export function getParams(
 
   let tableName = ctx.tableName ?? table?.path ?? tableId;
 
-  if (dialect?.dialect == 'postgres') {
-    (dialect as PostgresDialectType).database = table?.path.split(
-      '.',
-    )[0] as string;
-  }
+  // if (dialect?.dialect == 'postgres') {
+  //   (dialect as PostgresDialectType).database = table?.path.split(
+  //     '.',
+  //   )[0] as string;
+  // }
 
   if (tableName.endsWith('.csv')) {
     const csv = atomStore.get(settingAtom).csv;

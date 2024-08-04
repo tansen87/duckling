@@ -20,7 +20,7 @@ arrow = { version = "52.0.0", features = ["prettyprint", "csv"] }
 duckdb = { version = "1.0.0", features = [
     "modern-full",
     # "bundled",
-    "extensions-full",
+    # "extensions-full",
 ] }
 
 futures-util = "0.3"
