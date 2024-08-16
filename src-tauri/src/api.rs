@@ -95,8 +95,7 @@ pub fn duck_fetch_all(path: &str, sql: &str, file: &str, cwd: Option<String>) ->
   let con = Connection::open(path);
   let db = con.map_err(|err| anyhow!("Failed to open database connection: {}", err))?;
   let edata = format!("COPY ({cleaned_sql}) TO '{file}' (DELIMITER '|');");
-  db.execute_batch(&edata)?;
-  anyhow::Ok(())
+  anyhow::Ok(db.execute_batch(&edata)?)
 }
 
 pub fn query(
