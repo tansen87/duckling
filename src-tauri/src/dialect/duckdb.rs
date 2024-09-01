@@ -57,11 +57,11 @@ impl Connection for DuckDbDialect {
   }
 
   async fn export(&self, sql: &str, file: &str) {
-    api::duck_fetch_all(&self.path, sql, file, self.cwd.clone()).unwrap();
-    // match api::duck_fetch_all(&self.path, sql, file, self.cwd.clone()) {
-    //   Ok(_) => println!("Export successful"),
-    //   Err(e) => println!("Export failed: {:?}", e),
-    // }
+    // api::duck_fetch_all(&self.path, sql, file, self.cwd.clone()).unwrap();
+    match api::duck_fetch_all(&self.path, sql, file, self.cwd.clone()) {
+      Ok(_) => println!("Export successful"),
+      Err(e) => println!("Export failed: {:?}", e),
+    }
   }
 
   async fn table_row_count(&self, table: &str, r#where: &str) -> anyhow::Result<usize> {

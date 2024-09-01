@@ -121,6 +121,10 @@ pub fn query(
   // query
   let mut stmt = db.prepare(sql)?;
 
+  let frames = stmt.query_arrow(duckdb::params![])?;
+  let schema = frames.get_schema();
+  let records: Vec<_> = frames.collect();
+
   let titles: Vec<_> = stmt
     .column_names()
     .iter()
@@ -130,10 +134,6 @@ pub fn query(
       r#type: stmt.column_type(i).to_string(),
     })
     .collect();
-
-  let frames = stmt.query_arrow(duckdb::params![])?;
-  let schema = frames.get_schema();
-  let records: Vec<_> = frames.collect();
 
   let batch = arrow::compute::concat_batches(&schema, &records)?;
   let total = batch.num_rows();

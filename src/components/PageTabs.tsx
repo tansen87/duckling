@@ -186,8 +186,8 @@ export function PageTabs({
         apiRef.current?.getItemElementById(activeKey) as Element,
       );
     }
-    if (items?.length > (itemsPrev?.length ?? 0)) {
-      }
+    // eslint-disable-next-line no-empty
+    if (items?.length > (itemsPrev?.length ?? 0)) { }
   }, [items, itemsPrev, activeKey]);
 
   const tabsList = items.map(({ tab }) => {
@@ -195,6 +195,7 @@ export function PageTabs({
     return (
       <TabsTrigger
         id={tab.id}
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         itemId={tab.id}
         key={tab.id}
