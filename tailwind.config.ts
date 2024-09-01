@@ -52,7 +52,7 @@ export default {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
-        selection: "hsl(var(--selection))",
+        selection: 'hsl(var(--selection))',
       },
       borderRadius: {
         lg: 'var(--radius)',

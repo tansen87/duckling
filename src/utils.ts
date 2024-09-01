@@ -97,7 +97,6 @@ export function convertId(
     id: `${dbId}:${data.path}`,
     dbId,
     icon: data.type ?? 'file',
-    ...data,
     displayName,
   } as NodeElementType;
 }
