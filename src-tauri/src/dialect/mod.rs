@@ -6,12 +6,9 @@ use crate::dialect::ast::first_stmt;
 use crate::utils::TreeNode;
 
 pub mod ast;
-pub mod clickhouse;
 pub mod duckdb;
 pub mod file;
 pub mod folder;
-pub mod mysql;
-pub mod postgres;
 pub mod sqlite;
 
 #[async_trait]

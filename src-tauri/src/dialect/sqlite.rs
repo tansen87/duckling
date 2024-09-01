@@ -90,14 +90,14 @@ impl SqliteDialect {
       let typ = Self::arrow_type(&col);
       let field = Field::new(col.name(), typ, true);
       fields.push(field);
-      println!("{:?} {:?}", col.name(), col.decl_type())
+      println!("{:?} {:?}", col.name(), col.decl_type());
     }
 
     let schema = Schema::new(fields);
     let mut batchs = vec![];
 
     let mut rows = stmt.query([])?;
-    println!("title={:?}", titles);
+    println!("title={titles:?}");
 
     while let Some(row) = rows.next()? {
       let mut arrs = vec![];
@@ -122,6 +122,7 @@ impl SqliteDialect {
   }
 
   fn arrow_type(col: &Column) -> DataType {
+    // https://sqlite.org/datatype3.html#determination_of_column_affinity
     if let Some(decl_type) = col.decl_type() {
       match decl_type {
         // INT, INTEGER
@@ -176,6 +177,7 @@ impl SqliteDialect {
 }
 
 pub fn convert_arrow(value: &Value, typ: &str) -> ArrayRef {
+  println!("{:?}", value);
   match value {
     Value::Integer(i) => {
       if typ.starts_with("NUMERIC") || typ.is_empty() {
@@ -234,7 +236,7 @@ pub fn convert_to_f64(value: &Value) -> Option<f64> {
 
 #[allow(dead_code)]
 pub fn convert_to_strings(values: &[Value]) -> Vec<Option<String>> {
-  values.iter().map(|v| convert_to_string(v)).collect()
+  values.iter().map(convert_to_string).collect()
 }
 
 #[allow(dead_code)]

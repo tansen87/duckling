@@ -49,7 +49,7 @@ fn handle_menu(app: &mut tauri::App) -> tauri::Result<()> {
     } else if id == "open-directory" {
       let path = app.dialog().file().blocking_pick_folder();
       if let Some(dir) = path {
-        let _ = app.emit("open-directory", dir);
+        let _ = app.emit("open-directory", &dir);
       }
     }
   });

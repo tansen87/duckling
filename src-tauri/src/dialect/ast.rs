@@ -116,7 +116,7 @@ fn convert_dialect(d: &str) -> Box<dyn sqlparser::dialect::Dialect> {
 
 #[cfg(test)]
 mod tests {
-  use sqlparser::dialect::GenericDialect;
+  // use sqlparser::dialect::GenericDialect;
   use std::ops::Deref;
 
   use super::*;

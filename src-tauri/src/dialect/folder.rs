@@ -49,12 +49,12 @@ impl Connection for FolderDialect {
       let mut tmp = vec![];
       let pattern = format!("{table}/**/*.parquet");
       if exist_glob(&pattern) {
-        tmp.push(format!("SELECT '*.parquet' as file_type, * FROM (DESCRIBE select * FROM read_parquet('{pattern}', union_by_name = true))"))
+        tmp.push(format!("SELECT '*.parquet' as file_type, * FROM (DESCRIBE select * FROM read_parquet('{pattern}', union_by_name = true))"));
       }
 
       let pattern = format!("{table}/**/*.csv");
       if exist_glob(&pattern) {
-        tmp.push(format!("SELECT '*.csv' as file_type, * FROM (DESCRIBE select * FROM read_csv('{pattern}', union_by_name = true))"))
+        tmp.push(format!("SELECT '*.csv' as file_type, * FROM (DESCRIBE select * FROM read_csv('{pattern}', union_by_name = true))"));
       }
 
       tmp.join("\n union all \n")
