@@ -5,7 +5,6 @@ import * as dialog from '@tauri-apps/plugin-dialog';
 import { PrimitiveAtom, useAtom, useAtomValue } from 'jotai';
 import { CodeIcon, DownloadIcon, EyeIcon, RefreshCw } from 'lucide-react';
 import { Suspense, useEffect, useState } from 'react';
-// import { toast } from 'sonner';
 
 import { Stack, ToolbarContainer } from '@/components/Toolbar';
 import { TransposeIcon } from '@/components/custom/Icons';
@@ -74,10 +73,12 @@ export function QueryView({ context }: { context: QueryContextAtom }) {
 
   const precision = useAtomValue(precisionAtom);
 
+  
   const TableComponent = CanvasTable;
   const [selectedCell, setSelectCell] = useState<string | null>(null);
 
   const theme = useTheme();
+
   return (
     <div className="h-full flex flex-col">
       <PageSizeToolbar
@@ -146,15 +147,6 @@ interface PageSizeToolbarProps {
   exportData: (file: string) => Promise<void>;
   ctx: QueryContextAtom;
 }
-
-// function useFocusAtom<T, K extends keyof T>(anAtom: PrimitiveAtom<T>, key: K) {
-//   return useSetAtom(
-//     focusAtom(
-//       anAtom,
-//       useCallback((optic: O.OpticFor_<T>) => optic.prop(key), []),
-//     ),
-//   );
-// }
 
 function PageSizeToolbar({ query, ctx, exportData }: PageSizeToolbarProps) {
   const setPage = useFocusAtom(ctx, 'page');
@@ -235,6 +227,7 @@ function PageSizeToolbar({ query, ctx, exportData }: PageSizeToolbarProps) {
         </HoverCard>
 
         <TooltipButton
+          disabled
           icon={<DownloadIcon />}
           tooltip="Export to CSV"
           onClick={handleExport}

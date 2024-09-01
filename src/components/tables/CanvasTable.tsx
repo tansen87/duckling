@@ -24,7 +24,6 @@ import { assign } from 'radash';
 
 type ITableThemeDefine = ComponentProps<typeof ListTable>['theme'];
 
-
 export interface TableProps<T = unknown> {
   data: T[];
   schema: SchemaType[];
@@ -78,9 +77,6 @@ const DARK_THEME: ITableThemeDefine = {
     borderColor: '#d1d5da',
   },
 };
-
-// const lightTheme = merge([themes.ARCO, LIGHT_THEME]);
-// const darkTheme = merge([themes.DARK, DARK_THEME]);
 
 function getDarkBackgroundColor(args: TYPES.StylePropertyFunctionArg): string {
   const { row, table } = args;
@@ -336,9 +332,9 @@ export const CanvasTable = React.memo(function CanvasTable({
         await writeText((e?.field as string) ?? '');
       }
     }
-    };
-    const theme = useTableTheme(transpose);
-    const appTheme = useTheme();
+  };
+  const theme = useTableTheme(transpose);
+  const appTheme = useTheme();
 
   const option: ListTableConstructorOptions = React.useMemo(
     () => ({
@@ -425,7 +421,7 @@ export const CanvasTable = React.memo(function CanvasTable({
       cross,
     ],
   );
-
+  console.log('cross:', cross);
   return (
     <div
       className="h-full select-text"

@@ -188,14 +188,15 @@ export function PageTabs({
     }
     if (items?.length > (itemsPrev?.length ?? 0)) {
       }
-    }, [items, itemsPrev, activeKey]);
+  }, [items, itemsPrev, activeKey]);
 
   const tabsList = items.map(({ tab }) => {
     const Comp = renderItem;
     return (
       <TabsTrigger
         id={tab.id}
-        itemID={tab.id}
+        // @ts-ignore
+        itemId={tab.id}
         key={tab.id}
         value={tab.id}
         className={cn(
@@ -291,6 +292,7 @@ export function DefaultTab({ tab, onRemove }: TabItemProps) {
           'group-data-[state=active]:visible',
           'hover:bg-selection',
         )}
+        // https://github.com/radix-ui/primitives/issues/1807
         onPointerDown={(e) => {
           e.stopPropagation();
           onRemove?.(tab.id);

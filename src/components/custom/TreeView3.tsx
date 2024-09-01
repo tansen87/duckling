@@ -232,9 +232,7 @@ export const TreeView3 = forwardRef(
     },
     ref,
   ) => {
-
     const updateTab = useTabsStore((s) => s.update);
-
     const [, setSelectedNode] = useAtom(selectedNodeAtom);
 
     const treeData = useMemo(() => {
