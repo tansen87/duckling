@@ -101,8 +101,10 @@ fn parse_order_by_expr(order_by: &str) -> Vec<(String, Option<bool>)> {
   let mut exprs = vec![];
   for stmt in &stmts {
     if let Statement::Query(ref tmp) = stmt {
-      for expr in &tmp.order_by {
-        exprs.push((expr.expr.to_string(), expr.asc))
+      if let Some(order_by) = &tmp.order_by {
+        for expr in &order_by.exprs {
+          exprs.push((expr.expr.to_string(), expr.asc));
+        }
       }
     }
   }

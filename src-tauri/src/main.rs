@@ -7,6 +7,7 @@ use cmd::OpenedUrls;
 use std::sync::Mutex;
 use tauri::menu::{CheckMenuItem, MenuBuilder, MenuItem, SubmenuBuilder};
 use tauri::Manager;
+// use tauri::Emitter;
 use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_log::{Target, TargetKind};
 
@@ -46,10 +47,10 @@ fn handle_menu(app: &mut tauri::App) -> tauri::Result<()> {
     } else if id == "toggle" {
       println!("toggle triggered!");
     } else if id == "open-directory" {
-      let path = app.dialog().file().blocking_pick_folder();
-      if let Some(dir) = path {
-        let _ = app.emit("open-directory", dir);
-      }
+      let _path = app.dialog().file().blocking_pick_folder();
+      // if let Some(dir) = path {
+      //   let _ = app.emit("open-directory", dir);
+      // }
     }
   });
   Ok(())

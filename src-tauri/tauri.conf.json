@@ -1,5 +1,5 @@
 {
-  "productName": "Duckling",
+  "productName": "duckling",
   "version": "../package.json",
   "identifier": "com.duckling.dev",
   "build": {
@@ -17,7 +17,7 @@
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "Duckling",
+        "title": "duckling",
         "label": "main",
         "width": 1000,
         "height": 800
@@ -54,18 +54,5 @@
         "mimeType": "application/octet-stream"
       }
     ]
-  },
-  "plugins": {
-    "updater": {
-      "active": true,
-      "windows": {
-        "installMode": "basicUi"
-      },
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEUxQTMyRkJEQzg5RUNCMUYKUldRZnk1N0l2UytqNFZTS1dMbFlsbnJuYWNaMGpVUEQwWDlBblBJUEM5cGZobFNHQ0Nicjd2TFQK",
-      "endpoints": [
-        "https://github.com/l1xnan/duckling/releases/latest/download/latest.json",
-        "https://mirror.ghproxy.com/https://github.com/l1xnan/duckling/releases/latest/download/latest.json"
-      ]
-    }
   }
 }
