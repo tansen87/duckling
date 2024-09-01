@@ -1,17 +1,17 @@
-use std::ops::Deref;
 
 use async_trait::async_trait;
-use serde::{Deserialize, Serialize};
-use sqlparser::parser::Parser;
 
 use crate::api::RawArrowData;
 use crate::dialect::ast::first_stmt;
 use crate::utils::TreeNode;
 
 pub mod ast;
+pub mod clickhouse;
 pub mod duckdb;
 pub mod file;
 pub mod folder;
+pub mod mysql;
+pub mod postgres;
 pub mod sqlite;
 
 #[async_trait]
@@ -39,7 +39,7 @@ pub trait Connection: Sync + Send {
     offset: Option<usize>,
   ) -> anyhow::Result<RawArrowData> {
     let mut sql = sql.to_string();
-    
+
     let dialect = self.dialect();
     let stmt = first_stmt(dialect, &sql);
 
@@ -75,10 +75,10 @@ pub trait Connection: Sync + Send {
     let mut sql = self._table_query_sql(table, where_, order_by);
 
     if limit != 0 {
-      sql = format!("{sql} limit {}", limit)
+      sql = format!("{sql} limit {limit}");
     }
     if offset != 0 {
-      sql = format!("{sql} offset {offset}")
+      sql = format!("{sql} offset {offset}");
     }
     println!("query table {}: {}", table, sql);
     let res = self.query(&sql, 0, 0).await;
