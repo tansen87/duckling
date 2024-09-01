@@ -227,7 +227,6 @@ function PageSizeToolbar({ query, ctx, exportData }: PageSizeToolbarProps) {
         </HoverCard>
 
         <TooltipButton
-          disabled
           icon={<DownloadIcon />}
           tooltip="Export to CSV"
           onClick={handleExport}
