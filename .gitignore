@@ -25,4 +25,7 @@ dist-ssr
 
 libduckdb
 duckdb.dll
+duckdb.hpp
+duckdb.lib
+duckdb.h
 .tauri
